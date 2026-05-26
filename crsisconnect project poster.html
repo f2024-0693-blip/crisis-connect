@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crisis Connect — Project Poster</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red:     #CC2200;
+    --red-lt:  #FF3311;
+    --dark:    #0A0A0A;
+    --mid:     #1A1A1A;
+    --card:    #141414;
+    --border:  #2A2A2A;
+    --text:    #E8E8E8;
+    --muted:   #888;
+    --accent:  #FF6644;
+  }
+
+  body {
+    background: var(--dark);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    width: 900px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* ── HEADER ─────────────────────────────────────── */
+  .header {
+    background: var(--mid);
+    border-bottom: 3px solid var(--red);
+    padding: 48px 56px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border: 40px solid var(--red);
+    border-radius: 50%;
+    opacity: 0.07;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 200px;
+    width: 200px; height: 200px;
+    border: 30px solid var(--red);
+    border-radius: 50%;
+    opacity: 0.05;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--red);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 96px;
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .title span {
+    color: var(--red-lt);
+  }
+
+  .subtitle {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 32px;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .meta-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ── BODY ────────────────────────────────────────── */
+  .body {
+    padding: 40px 56px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px 26px;
+  }
+
+  .card.full { grid-column: 1 / -1; }
+
+  .card-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 0.04em;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .card p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: #aaa;
+  }
+
+  /* ── PIPELINE ────────────────────────────────────── */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .pipeline-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .phase-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--red);
+    font-weight: 600;
+    width: 24px;
+    flex-shrink: 0;
+  }
+
+  .phase-bar {
+    flex: 1;
+    background: var(--mid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .phase-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .phase-acc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── METRICS ─────────────────────────────────────── */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .metric {
+    background: var(--mid);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--red);
+    border-radius: 4px;
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .metric-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-val span {
+    font-size: 20px;
+    color: var(--accent);
+  }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  /* ── CLASSES ─────────────────────────────────────── */
+  .classes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .class-item {
+    background: var(--mid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+
+  .class-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .class-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── TECH STACK ──────────────────────────────────── */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    background: var(--mid);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 5px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .tag.hot {
+    border-color: var(--red);
+    color: var(--accent);
+  }
+
+  /* ── ARCHITECTURE MINI ───────────────────────────── */
+  .arch {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .arch-box {
+    flex: 1;
+    background: var(--mid);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .arch-box.highlight {
+    border-color: var(--red);
+    background: #1e0a08;
+  }
+
+  .arch-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 2px;
+  }
+
+  .arch-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  .arch-arrow {
+    color: var(--red);
+    font-size: 14px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  .arch-pct {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    margin-top: 3px;
+  }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  .footer {
+    background: var(--mid);
+    border-top: 1px solid var(--border);
+    padding: 20px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .footer-right {
+    text-align: right;
+  }
+
+  .url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .github-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── RESULT BAR ──────────────────────────────────── */
+  .result-bar {
+    background: linear-gradient(90deg, #1e0a08, #0A0A0A);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+  }
+
+  .result-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .result-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--red-lt);
+    line-height: 1;
+  }
+
+  .result-desc {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="badge">CSC-233 Artificial Intelligence Lab &nbsp;|&nbsp; Spring 2026 &nbsp;|&nbsp; Beaconhouse National University</div>
+  <div class="title">CRISIS<br/><span>CONNECT</span></div>
+  <div class="subtitle">AI-Powered Disaster Incident Classification for Real-Time Emergency Response</div>
+  <div class="meta-row">
+    <div class="meta-item">
+      <span class="meta-label">Team</span>
+      <span class="meta-value">Maleeha Fatima &nbsp;|&nbsp; Imman Aamir &nbsp;|&nbsp; Ezzah Ali &nbsp;|&nbsp; Syed Hudair Shah Bukhari &nbsp;|&nbsp; Abdulraheem Kashif</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Section</span>
+      <span class="meta-value">C</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Instructor</span>
+      <span class="meta-value">Hafiz Muhammad Abubakar</span>
+    </div>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- PROBLEM STATEMENT -->
+  <div class="card full">
+    <div class="card-label">Problem Statement</div>
+    <div class="card-title">Pakistan's disaster response is unstructured and slow</div>
+    <p>Pakistan faces annual floods, earthquakes, fires, and traffic disasters with no unified AI-powered incident classification system. Citizens cannot quickly report disasters in a structured way, and emergency responders lack automated tools to prioritise incidents by type and severity. Crisis Connect addresses this gap by building a multimodal AI classifier that takes a photo and a short text description from a citizen and instantly classifies the disaster type while estimating severity level.</p>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="card">
+    <div class="card-label">Project Pipeline</div>
+    <div class="pipeline">
+      <div class="pipeline-row">
+        <span class="phase-num">P1</span>
+        <div class="phase-bar">
+          <span class="phase-name">Dataset preparation</span>
+          <span class="phase-acc">2537 images</span>
+        </div>
+      </div>
+      <div class="pipeline-row">
+        <span class="phase-num">P2</span>
+        <div class="phase-bar">
+          <span class="phase-name">ResNet-50 CNN classifier</span>
+          <span class="phase-acc">91.03%</span>
+        </div>
+      </div>
+      <div class="pipeline-row">
+        <span class="phase-num">P3a</span>
+        <div class="phase-bar">
+          <span class="phase-name">Audio + TF-IDF preprocessing</span>
+          <span class="phase-acc">Whisper</span>
+        </div>
+      </div>
+      <div class="pipeline-row">
+        <span class="phase-num">P3b</span>
+        <div class="phase-bar">
+          <span class="phase-name">MLP text classifier</span>
+          <span class="phase-acc">89.47%</span>
+        </div>
+      </div>
+      <div class="pipeline-row">
+        <span class="phase-num">P4</span>
+        <div class="phase-bar">
+          <span class="phase-name">Fusion layer + severity</span>
+          <span class="phase-acc">95.07%</span>
+        </div>
+      </div>
+      <div class="pipeline-row">
+        <span class="phase-num">P5</span>
+        <div class="phase-bar">
+          <span class="phase-name">Streamlit app + deployment</span>
+          <span class="phase-acc">Live</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLASSES -->
+  <div class="card">
+    <div class="card-label">Disaster Classes</div>
+    <div class="classes">
+      <div class="class-item">
+        <div class="class-icon">🏚️</div>
+        <div class="class-name">Earthquake</div>
+      </div>
+      <div class="class-item">
+        <div class="class-icon">🌊</div>
+        <div class="class-name">Flood</div>
+      </div>
+      <div class="class-item">
+        <div class="class-icon">🔥</div>
+        <div class="class-name">Fire</div>
+      </div>
+      <div class="class-item">
+        <div class="class-icon">🚗</div>
+        <div class="class-name">Traffic</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="card full">
+    <div class="card-label">Performance Metrics</div>
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-val">91<span>%</span></div>
+        <div class="metric-label">CNN ResNet-50<br/>test accuracy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">73<span>%</span></div>
+        <div class="metric-label">MLP text classifier<br/>test accuracy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">94<span>%</span></div>
+        <div class="metric-label">Fusion layer<br/>final accuracy</div>
+      </div>
+      <div class="metric">
+        <div class="metric-val">2537</div>
+        <div class="metric-label">Images in dataset<br/>4 classes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARCHITECTURE -->
+  <div class="card full">
+    <div class="card-label">Model Architecture</div>
+    <div class="arch">
+      <div class="arch-box">
+        <div class="arch-name">Image</div>
+        <div class="arch-sub">JPG / PNG</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="arch-name">ResNet-50</div>
+        <div class="arch-sub">Transfer learning</div>
+        <div class="arch-pct">91.03%</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box highlight">
+        <div class="arch-name">Fusion</div>
+        <div class="arch-sub">CNN 70% + NLP 30%</div>
+        <div class="arch-pct">95.07%</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-box">
+        <div class="arch-name">Output</div>
+        <div class="arch-sub">Class + severity</div>
+      </div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="arch" style="margin-top:0">
+        <div class="arch-box">
+          <div class="arch-name">Text</div>
+          <div class="arch-sub">Max 200 chars</div>
+        </div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-box">
+          <div class="arch-name">TF-IDF + MLP</div>
+          <div class="arch-sub">3000 features</div>
+          <div class="arch-pct">89.47%</div>
+        </div>
+        <div class="arch-arrow" style="opacity:0">→</div>
+        <div class="arch-box" style="opacity:0"></div>
+        <div class="arch-arrow" style="opacity:0">→</div>
+        <div class="arch-box" style="opacity:0"></div>
+      </div>
+    </div>
+
+    <div class="result-bar">
+      <div>
+        <div class="result-label">Final fusion accuracy</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Earthquake 93.4% &nbsp;|&nbsp; Flood 94.6% &nbsp;|&nbsp; Fire 95.8% &nbsp;|&nbsp; Traffic 91.9%</div>
+      </div>
+      <div class="result-val">95.07%</div>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="card">
+    <div class="card-label">Tech Stack</div>
+    <div class="tags">
+      <span class="tag hot">PyTorch</span>
+      <span class="tag hot">ResNet-50</span>
+      <span class="tag hot">scikit-learn</span>
+      <span class="tag">TF-IDF</span>
+      <span class="tag">Whisper</span>
+      <span class="tag">FastAPI</span>
+      <span class="tag hot">Streamlit</span>
+      <span class="tag">NLTK</span>
+      <span class="tag">PIL</span>
+      <span class="tag">NumPy</span>
+      <span class="tag">Matplotlib</span>
+      <span class="tag">Seaborn</span>
+    </div>
+  </div>
+
+  <!-- NOVELTY -->
+  <div class="card">
+    <div class="card-label">Key Novelty</div>
+    <div class="card-title" style="font-size:22px">Multimodal fusion</div>
+    <p>Most existing disaster classifiers use images alone. Crisis Connect combines image classification (ResNet-50 CNN) with text classification (TF-IDF + MLP) in a weighted fusion — improving accuracy from 91% to 95.07%. Supports audio input via Whisper speech-to-text for hands-free reporting in emergencies.</p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-left">
+    <strong style="color:var(--text)">Beaconhouse National University</strong><br/>
+    School of Computer and Information Technology<br/>
+    Department of Computer Science &nbsp;|&nbsp; Spring 2026
+  </div>
+  <div class="footer-right">
+    <span class="url">crisis-connect-vjmeydb54qdgg7yxm3xfes.streamlit.app</span>
+    <span class="github-url">github.com/crisis-connect</span>
+  </div>
+</div>
+
+</body>
+</html>
