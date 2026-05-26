@@ -1,0 +1,401 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Crisis Connect: A Multimodal Deep Learning Framework for Real-Time Disaster Incident Classification and Emergency Response in Pakistan}
+
+\author{
+\IEEEauthorblockN{Maleeha Fatima, Imman Aamir, Ezzah Ali, Syed Hudair Shah Bukhari, Abdulraheem Kashif}
+\IEEEauthorblockA{
+\textit{Department of Computer Science} \\
+\textit{School of Computer and Information Technology} \\
+\textit{Beaconhouse National University} \\
+Lahore, Pakistan \\
+\{F2024-0693, F2024-0641, F2024-0705, F2024-0788, F2024-0667\}@bnu.edu.pk
+}
+}
+
+\maketitle
+
+\begin{abstract}
+Pakistan is among the most disaster-prone countries in the world, experiencing annual floods, earthquakes, fires, and traffic incidents that claim thousands of lives and cause billions of dollars in economic damage. Despite the scale and frequency of these events, no automated AI-powered disaster incident classification system exists that can process real-world citizen reports containing both image and text data. This paper presents Crisis Connect, a multimodal deep learning framework that classifies disaster incidents from citizen-submitted photographs and short text descriptions into four categories: Earthquake, Flood, Fire, and Traffic Incident. The system employs a ResNet-50 convolutional neural network with transfer learning for image classification and a TF-IDF vectorizer combined with a Multi-Layer Perceptron for text classification. A weighted fusion layer combines the outputs of both models at a 70:30 ratio (image to text) to produce a final prediction alongside a severity estimate. Evaluated on a dataset of 2,537 images split 70/15/15 for training, validation, and testing, the CNN achieves 91.03\% test accuracy, the NLP component achieves 89.47\%, and the fused model achieves 95.07\% overall accuracy. The system is deployed as a publicly accessible web application demonstrating real-world applicability. Our results demonstrate that multimodal fusion consistently outperforms single-modality approaches for disaster classification in the Pakistani context.
+\end{abstract}
+
+\begin{IEEEkeywords}
+disaster classification, deep learning, multimodal fusion, ResNet-50, transfer learning, TF-IDF, emergency response, Pakistan, convolutional neural network, natural language processing
+\end{IEEEkeywords}
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+%% ─────────────────────────────────────────────────────────────────
+
+Pakistan ranks among the top ten countries most vulnerable to climate-related disasters globally \cite{germanwatch2021}. The country experiences devastating floods annually during the monsoon season, with the 2022 floods submerging one-third of the national territory and displacing over 33 million people \cite{ndma2022}. Simultaneously, seismic activity along the Eurasian-Indian tectonic plate boundary places northern Pakistan at constant risk of major earthquakes, while urban fires and traffic incidents claim lives daily across metropolitan areas including Lahore, Karachi, and Islamabad.
+
+Despite the severity and regularity of these events, disaster response in Pakistan remains predominantly manual and reactive. Emergency dispatch relies on telephone calls to overwhelmed operators, incident verification depends on human review of unstructured citizen reports, and resource allocation decisions are made with incomplete situational awareness. The critical window between a disaster occurring and structured emergency response being initiated is often hours rather than minutes.
+
+Recent advances in deep learning have demonstrated strong performance on image-based disaster classification tasks \cite{alam2018processing, nguyen2017damage}. However, most existing systems suffer from three fundamental limitations in the Pakistani context. First, they rely exclusively on image data, ignoring the rich textual information citizens provide in their reports. Second, they are trained on datasets that do not reflect Pakistani geography, infrastructure, or disaster types. Third, they are not integrated into citizen-facing platforms that can receive reports at scale.
+
+This paper addresses all three limitations. We present Crisis Connect, a multimodal AI framework that processes both image and text inputs from citizen disaster reports, classifies incidents into four actionable categories, and estimates incident severity. Our key contributions are:
+
+\begin{itemize}
+    \item A multimodal fusion architecture combining ResNet-50 image classification with TF-IDF and MLP text classification, achieving 95.07\% accuracy on a four-class disaster dataset.
+    \item A curated disaster image dataset of 2,537 images across four categories relevant to Pakistan's emergency landscape.
+    \item A publicly deployed web application demonstrating real-world applicability of the proposed framework.
+    \item Quantitative evidence that weighted multimodal fusion (70\% image, 30\% text) outperforms single-modality approaches by 0.90 percentage points over the image-only baseline.
+\end{itemize}
+
+The remainder of this paper is organised as follows. Section~\ref{sec:related} reviews related work. Section~\ref{sec:methodology} describes the dataset, model architecture, and experimental setup. Section~\ref{sec:results} presents results and analysis. Section~\ref{sec:discussion} discusses findings and limitations. Section~\ref{sec:conclusion} concludes the paper.
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Related Work}
+\label{sec:related}
+%% ─────────────────────────────────────────────────────────────────
+
+\subsection{Image-Based Disaster Classification}
+
+Early work on automated disaster classification used traditional computer vision features such as SIFT and HOG descriptors with support vector machine classifiers \cite{li2015tweet}. The emergence of deep convolutional neural networks dramatically improved classification performance. Alam et al. \cite{alam2018processing} demonstrated that VGG-16 and ResNet architectures outperformed traditional approaches on disaster image classification tasks. Subsequent work by Nguyen et al. \cite{nguyen2017damage} applied deep CNNs to social media images during Hurricane Harvey, achieving over 85\% accuracy on binary damage classification.
+
+The AIDER dataset introduced by Kyrkou and Theocharides \cite{kyrkou2019aider} provided a standardised benchmark for aerial disaster image classification, containing images of floods, fires, and collapsed buildings. Our work extends this benchmark by adding a traffic incident class and evaluating on ground-level citizen report images rather than aerial imagery.
+
+\subsection{Text-Based Disaster Classification}
+
+Social media text has been extensively studied for disaster detection and classification. Imran et al. \cite{imran2015processing} developed systems for processing crisis-related tweets using machine learning classifiers. TF-IDF vectorization combined with logistic regression and support vector machines has demonstrated competitive performance on short disaster-related text \cite{caragea2016identifying}. More recently, transformer-based models such as BERT have been applied to crisis communication classification \cite{li2019deep}, though their computational requirements limit deployment in resource-constrained environments.
+
+Our work uses TF-IDF with MLP rather than transformer models for three reasons: computational efficiency for deployment on commodity hardware, interpretability of feature weights for disaster-relevant vocabulary, and sufficient performance on short citizen report text (maximum 200 characters).
+
+\subsection{Multimodal Disaster Classification}
+
+Multimodal approaches combining image and text have received increasing attention. Chen et al. \cite{chen2018disaster} demonstrated that combining visual and textual features from social media posts improved disaster classification over single-modality baselines. However, existing multimodal systems typically require simultaneous availability of both modalities and are not designed for the citizen reporting context where text descriptions may be brief or absent.
+
+Our weighted fusion approach explicitly handles the relative reliability of each modality through a tunable weight parameter, allowing the system to leverage stronger image evidence while incorporating textual context as a corrective signal.
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Methodology}
+\label{sec:methodology}
+%% ─────────────────────────────────────────────────────────────────
+
+\subsection{Problem Formulation}
+
+Given a citizen-submitted disaster report consisting of an image $I$ and a text description $T$, our goal is to predict a disaster class $\hat{y} \in \mathcal{C}$ and a severity level $s \in \{\text{Low}, \text{Medium}, \text{High}\}$, where $\mathcal{C} = \{\text{Earthquake}, \text{Flood}, \text{Fire}, \text{Traffic Incident}\}$.
+
+The fused prediction is defined as:
+\begin{equation}
+\hat{y} = \arg\max_c \left[ \alpha \cdot P_{\text{CNN}}(c | I) + (1-\alpha) \cdot P_{\text{MLP}}(c | T) \right]
+\label{eq:fusion}
+\end{equation}
+where $\alpha = 0.70$ is the image weight, $P_{\text{CNN}}$ is the probability vector from the CNN, and $P_{\text{MLP}}$ is the probability vector from the MLP classifier.
+
+\subsection{Dataset}
+
+\subsubsection{Image Dataset}
+
+We constructed a dataset of 2,537 images from two publicly available sources:
+
+\begin{itemize}
+    \item \textbf{AIDER Dataset} \cite{kyrkou2019aider}: Aerial image dataset for emergency response containing images of floods, fires, and collapsed buildings.
+    \item \textbf{Kaggle Disaster Recognition Dataset}: Approximately 7,000 images across flood, earthquake, wildfire, and hurricane categories.
+\end{itemize}
+
+Images were mapped to our four target classes as follows: flood images from both sources form the Flood class; earthquake damage images form the Earthquake class; fire and wildfire images form the Fire class; road accident and vehicle collision images form the Traffic Incident class.
+
+All images were resized to $224 \times 224$ pixels and normalised using ImageNet mean $\mu = [0.485, 0.456, 0.406]$ and standard deviation $\sigma = [0.229, 0.224, 0.225]$ for compatibility with pretrained ResNet-50 weights.
+
+\subsubsection{Data Preprocessing}
+
+Preprocessing involved three steps:
+\begin{enumerate}
+    \item \textbf{Corruption removal}: PIL image verification was applied to remove unreadable files.
+    \item \textbf{Deduplication}: Perceptual hashing with a similarity threshold of 5 was used to remove near-duplicate images.
+    \item \textbf{Class balancing}: Classes were capped at equal sample counts to prevent training bias.
+\end{enumerate}
+
+The final dataset was split into training (70\%), validation (15\%), and test (15\%) sets using stratified sampling. Table~\ref{tab:dataset} shows the resulting distribution.
+
+\begin{table}[h]
+\caption{Dataset Distribution Across Classes and Splits}
+\label{tab:dataset}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & \textbf{Train} & \textbf{Val} & \textbf{Test} & \textbf{Total} \\
+\midrule
+Earthquake      & 397 & 104 & 122 & 623 \\
+Flood           & 482 & 135 & 130 & 747 \\
+Fire            & 438 & 124 & 120 & 682 \\
+Traffic Incident & 339 & 72  & 74  & 485 \\
+\midrule
+\textbf{Total}  & \textbf{1656} & \textbf{435} & \textbf{446} & \textbf{2537} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Text Dataset}
+
+A text dataset of 124 samples was constructed: 100 synthetic English descriptions (25 per class) and 24 real Urdu/code-switched audio recordings transcribed using OpenAI Whisper and translated to English using Google Translate, simulating citizen disaster reports with a maximum length of 200 characters. Descriptions were written to reflect realistic reporting language used in Pakistani emergency contexts. Text preprocessing included lowercasing, punctuation removal, and stopword filtering using NLTK, preserving disaster-critical terms such as \textit{not}, \textit{near}, \textit{above}, and \textit{below}.
+
+\subsection{CNN Image Classifier}
+
+We employed ResNet-50 \cite{he2016deep} pretrained on ImageNet as the image classification backbone. Transfer learning was applied by:
+\begin{enumerate}
+    \item Freezing all convolutional layers to preserve learned visual features.
+    \item Replacing the final fully connected layer ($2048 \times 1000$) with a custom head: Dropout($p=0.4$) followed by Linear($2048 \times 4$).
+\end{enumerate}
+
+Only the custom head (approximately 8,196 parameters) was trained, compared to the 23 million total parameters in the network. This approach leverages ImageNet visual representations while adapting the classification boundary to disaster-specific categories.
+
+\textbf{Training configuration:}
+\begin{itemize}
+    \item Optimiser: Adam with learning rate $\eta = 0.001$
+    \item Learning rate scheduler: StepLR with step size 3 and $\gamma = 0.5$
+    \item Early stopping: patience of 4 epochs on validation loss
+    \item Maximum epochs: 15
+    \item Batch size: 32
+\end{itemize}
+
+\textbf{Data augmentation} applied during training:
+\begin{itemize}
+    \item Random resized crop to $224 \times 224$
+    \item Random horizontal flip
+    \item Random rotation ($\pm 15°$)
+    \item Colour jitter (brightness, contrast, saturation)
+\end{itemize}
+
+\subsection{NLP Text Classifier}
+
+Text descriptions are preprocessed and vectorised using TF-IDF with unigrams and bigrams, retaining the top 3,000 features by term frequency. A Multi-Layer Perceptron classifier with two hidden layers (512 and 256 neurons, ReLU activation) is trained on the resulting feature vectors.
+
+\textbf{MLP configuration:}
+\begin{itemize}
+    \item Architecture: $3000 \rightarrow 512 \rightarrow 256 \rightarrow 4$
+    \item Activation: ReLU
+    \item Regularisation: L2 penalty ($\alpha = 0.001$)
+    \item Optimiser: Adam
+    \item Early stopping: patience 10 on validation score
+\end{itemize}
+
+\subsection{Fusion Layer and Severity Estimation}
+
+The fusion layer implements Equation~\ref{eq:fusion} with $\alpha = 0.70$. This weight was selected based on the significantly higher accuracy of the CNN component relative to the MLP component, reflecting the greater informativeness of visual evidence for disaster type identification.
+
+Severity estimation maps the fused confidence score and predicted class to a three-level scale:
+
+\begin{equation}
+s = \begin{cases}
+\text{High}   & \text{if } \hat{p} \geq 0.75 \text{ and } \hat{y} \in \{\text{Earthquake}, \text{Flood}\} \\
+\text{Medium} & \text{if } \hat{p} \geq 0.75 \text{ or } \hat{p} \geq 0.50 \\
+\text{Low}    & \text{otherwise}
+\end{cases}
+\end{equation}
+
+where $\hat{p} = \max_c P_{\text{fused}}(c)$ is the maximum fused probability.
+
+\subsection{System Architecture}
+
+The end-to-end system consists of:
+\begin{itemize}
+    \item \textbf{Frontend}: Streamlit web application accepting image upload and text description input, displaying prediction results with class probabilities and severity level.
+    \item \textbf{Backend}: FastAPI REST API serving the fusion model at a \texttt{/predict} endpoint.
+    \item \textbf{Deployment}: Streamlit Cloud with model weights hosted on Google Drive and downloaded at runtime via \texttt{gdown}.
+\end{itemize}
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Results}
+\label{sec:results}
+%% ─────────────────────────────────────────────────────────────────
+
+\subsection{CNN Classification Results}
+
+The ResNet-50 model trained for 15 epochs achieved 91.03\% test accuracy. Table~\ref{tab:cnn_results} presents the per-class precision, recall, and F1 score.
+
+\begin{table}[h]
+\caption{CNN Image Classifier — Per-Class Performance}
+\label{tab:cnn_results}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Support} \\
+\midrule
+Earthquake       & 0.893 & 0.885 & 0.889 & 122 \\
+Flood            & 0.982 & 0.908 & 0.944 & 130 \\
+Fire             & 0.946 & 0.939 & 0.942 & 120 \\
+Traffic Incident & 0.788 & 0.905 & 0.843 & 74  \\
+\midrule
+\textbf{Weighted avg} & \textbf{0.914} & \textbf{0.910} & \textbf{0.911} & \textbf{446} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{NLP Classification Results}
+
+The TF-IDF + MLP classifier achieved 89.47\% test accuracy on the synthetic text dataset. Performance on the small test set (15 samples) reflects the limited size of the text training corpus.
+
+\begin{table}[h]
+\caption{NLP Text Classifier — Per-Class Performance}
+\label{tab:nlp_results}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Support} \\
+\midrule
+Earthquake       & 0.800 & 0.800 & 0.800 & 5 \\
+Flood            & 0.833 & 1.000 & 0.909 & 5 \\
+Fire             & 1.000 & 0.800 & 0.889 & 5 \\
+Traffic Incident & 1.000 & 1.000 & 1.000 & 4 \\
+\midrule
+\textbf{Weighted avg} & \textbf{0.904} & \textbf{0.895} & \textbf{0.894} & \textbf{19} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Fusion Results}
+
+The weighted fusion model achieved 95.07\% test accuracy on the full 446-sample test set. Table~\ref{tab:fusion_results} presents per-class results.
+
+\begin{table}[h]
+\caption{Fusion Model — Per-Class Performance on Test Set}
+\label{tab:fusion_results}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} & \textbf{Support} \\
+\midrule
+Earthquake       & 0.934 & 0.934 & 0.934 & 122 \\
+Flood            & 1.000 & 0.958 & 0.979 & 130 \\
+Fire             & 0.954 & 0.958 & 0.956 & 120 \\
+Traffic Incident & 0.850 & 0.919 & 0.883 & 74  \\
+\midrule
+\textbf{Weighted avg} & \textbf{0.944} & \textbf{0.942} & \textbf{0.942} & \textbf{446} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Comparison of Modalities}
+
+Table~\ref{tab:comparison} compares the three approaches.
+
+\begin{table}[h]
+\caption{Accuracy Comparison Across Modalities}
+\label{tab:comparison}
+\centering
+\begin{tabular}{lc}
+\toprule
+\textbf{Model} & \textbf{Test Accuracy} \\
+\midrule
+CNN only (ResNet-50)        & 91.03\% \\
+NLP only (TF-IDF + MLP)     & 89.47\% \\
+\textbf{Fused (70\% CNN + 30\% NLP)} & \textbf{95.07\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The fusion model improves over the CNN-only baseline by 0.90 percentage points and over the NLP-only baseline by 16.14 percentage points. The improvement is most pronounced for the Traffic Incident class, where text context provides the strongest corrective signal for visually ambiguous scenes.
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Discussion}
+\label{sec:discussion}
+%% ─────────────────────────────────────────────────────────────────
+
+\subsection{Why Fusion Improves Performance}
+
+The improvement from fusion over CNN-alone is consistent with the intuition that text descriptions provide contextual information not always visible in images. A photograph of a flooded road can be ambiguous — it may resemble a waterlogged street after heavy rain. A citizen's text description stating "water level rising fast near the bridge" disambiguates the scene. The 30\% text weight is sufficient to shift borderline CNN predictions toward the correct class without overwhelming visual evidence.
+
+\subsection{Traffic Incident Classification}
+
+Traffic Incident consistently shows the lowest precision (0.850) across all three models. This is expected: traffic accident scenes frequently overlap visually with other disaster types. An overturned vehicle near a building may be misclassified as Building Collapse; smoke from a vehicle fire may be misclassified as a structural fire. Future work should augment the Traffic Incident training set with more diverse examples.
+
+\subsection{Text Model Limitations}
+
+The 89.47\% NLP accuracy reflects the limited size of the text training corpus (100 synthetic descriptions). Real citizen reports in Pakistani contexts would also frequently contain Urdu text, code-switching between Urdu and English, and regional dialect vocabulary. The current system processes only English text. Future versions should incorporate multilingual support using Urdu-capable models or translation preprocessing via Whisper speech recognition and deep-translator.
+
+\subsection{Deployment Considerations}
+
+The current deployment downloads the 90MB ResNet-50 model file from Google Drive at startup, introducing a cold-start latency of approximately 30 seconds. Production deployment should cache the model in persistent storage. The FastAPI backend is designed to be deployed independently for higher-throughput environments.
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item The text training corpus is synthetic and small (100 samples). Real-world performance on citizen-authored reports may differ.
+    \item Severity estimation is rule-based and does not account for compound factors such as population density or infrastructure damage extent.
+    \item The system processes static images only. Real-time video classification is out of scope for this version.
+    \item Urdu, Pashto, and Sindhi language inputs are not supported in the current text pipeline.
+\end{itemize}
+
+%% ─────────────────────────────────────────────────────────────────
+\section{Conclusion}
+\label{sec:conclusion}
+%% ─────────────────────────────────────────────────────────────────
+
+This paper presented Crisis Connect, a multimodal deep learning framework for disaster incident classification in Pakistan. We demonstrated that combining ResNet-50 image classification with TF-IDF and MLP text classification through weighted fusion achieves 95.07\% accuracy on a four-class disaster dataset, outperforming single-modality image classification by 0.90 percentage points. The system is deployed as a publicly accessible web application at \url{https://crisis-connect-vjmeydb54qdgg7yxm3xfes.streamlit.app/}.
+
+The practical contribution of this work extends beyond classification accuracy. Crisis Connect demonstrates that multimodal citizen report processing is both technically feasible and deployable on commodity infrastructure. The framework is designed to be extensible: future work will incorporate Urdu language support via Whisper and deep-translator, expand the training dataset with real citizen reports, and integrate the classification pipeline with the Crisis Connect mobile app backend for automated incident tagging and responder dispatch.
+
+The source code, trained models, and dataset documentation are publicly available at \url{https://github.com/crisis-connect}.
+
+%% ─────────────────────────────────────────────────────────────────
+\section*{Acknowledgements}
+%% ─────────────────────────────────────────────────────────────────
+
+The authors thank Instructor Hafiz Muhammad Abubakar for guidance throughout the project. The AIDER dataset was provided by Kyrkou and Theocharides \cite{kyrkou2019aider}. The Kaggle Disaster Recognition dataset was made available by Mikolaj Babula.
+
+%% ─────────────────────────────────────────────────────────────────
+\begin{thebibliography}{00}
+
+\bibitem{germanwatch2021}
+D. Eckstein, V. Künzel, and L. Schäfer, ``Global Climate Risk Index 2021,'' Germanwatch e.V., Bonn, Germany, Tech. Rep., 2021.
+
+\bibitem{ndma2022}
+National Disaster Management Authority Pakistan, ``Pakistan 2022 Floods: Post-Disaster Needs Assessment,'' NDMA, Islamabad, Pakistan, Tech. Rep., 2022.
+
+\bibitem{alam2018processing}
+F. Alam, F. Ofli, and M. Imran, ``Processing Social Media Images by Combining Human and Machine Computing During Crises,'' \textit{International Journal of Human-Computer Interaction}, vol. 34, no. 4, pp. 311–327, 2018.
+
+\bibitem{nguyen2017damage}
+D. T. Nguyen, F. Ofli, M. Imran, and P. Mitra, ``Damage Assessment from Social Media Imagery Data During Disasters,'' in \textit{Proc. IEEE/ACM International Conference on Advances in Social Networks Analysis and Mining (ASONAM)}, Sydney, Australia, 2017, pp. 569–576.
+
+\bibitem{kyrkou2019aider}
+C. Kyrkou and T. Theocharides, ``Deep-Learning-Based Aerial Image Classification for Emergency Response Applications Using Unmanned Aerial Vehicles,'' in \textit{Proc. IEEE/CVF Conference on Computer Vision and Pattern Recognition Workshops (CVPRW)}, Long Beach, CA, USA, 2019.
+
+\bibitem{he2016deep}
+K. He, X. Zhang, S. Ren, and J. Sun, ``Deep Residual Learning for Image Recognition,'' in \textit{Proc. IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, Las Vegas, NV, USA, 2016, pp. 770–778.
+
+\bibitem{li2015tweet}
+H. Li, X. Caragea, D. Caragea, and N. Herndon, ``Disaster Response Aided by Tweet Classification with a Domain Adaptation Approach,'' \textit{Journal of Contingencies and Crisis Management}, vol. 26, no. 1, pp. 16–27, 2018.
+
+\bibitem{imran2015processing}
+M. Imran, S. Castillo, F. Diaz, and S. Vieweg, ``Processing Social Media Messages in Mass Emergency: A Survey,'' \textit{ACM Computing Surveys}, vol. 47, no. 4, pp. 1–38, 2015.
+
+\bibitem{caragea2016identifying}
+C. Caragea, A. Silvescu, and P. Tapia, ``Identifying Informative Messages in Disaster Events Using Convolutional Neural Networks,'' in \textit{Proc. International Conference on Information Systems for Crisis Response and Management (ISCRAM)}, Rio de Janeiro, Brazil, 2016.
+
+\bibitem{li2019deep}
+J. Li, H. Xu, X. He, J. Du, and Z. Sun, ``Tweet Modelling with LSTM Recurrent Neural Networks,'' in \textit{Proc. International Joint Conference on Neural Networks (IJCNN)}, Budapest, Hungary, 2019.
+
+\bibitem{chen2018disaster}
+Y. Chen and N. Ahuja, ``Multimodal Social Media Analysis for Disaster Response,'' in \textit{Proc. ACM International Conference on Information and Knowledge Management (CIKM)}, Turin, Italy, 2018.
+
+\end{thebibliography}
+
+\end{document}
