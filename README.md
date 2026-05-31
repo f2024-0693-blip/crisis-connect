@@ -81,7 +81,7 @@
 | 📁 Original Raw Dataset | 4,386 |
 | 🧹 Cleaned Dataset | 2,537 |
 | ✂️ Split Dataset (train/val/test) | 2,537 |
-| 🤖 Model Weights (.pth) — Latest | [Download](https://drive.google.com/file/d/1QY40L6gDE6kYVv09ylAwh6b1JY0T5AaM/view?usp=sharing) |
+| 🤖 ResNet-50 Model Weights (.pth)  | [Download](https://drive.google.com/file/d/1QY40L6gDE6kYVv09ylAwh6b1JY0T5AaM/view?usp=sharing) |
 
 ### Dataset Split
 
@@ -229,3 +229,4 @@ streamlit run app.py
 
 **CSC-233 — Artificial Intelligence Lab**
 Beaconhouse National University | Spring 2026
+
