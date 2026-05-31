@@ -7,6 +7,7 @@
 ## 🌐 Live Application
 
 🔗 **Streamlit App:** https://crisis-connect-vjmeydb54qdgg7yxm3xfes.streamlit.app/
+
 📁 **GitHub Repository:** https://github.com/yourusername/crisis-connect
 
 ---
