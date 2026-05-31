@@ -6,10 +6,8 @@
 
 ## 🌐 Live Application
 
-| Service | URL |
-|---|---|
-| Frontend (Streamlit App) | https://crisis-connect-vjmeydb54qdgg7yxm3xfes.streamlit.app/ |
-| GitHub Repository | https://github.com/yourusername/crisis-connect |
+🔗 **Streamlit App:** https://crisis-connect-vjmeydb54qdgg7yxm3xfes.streamlit.app/
+📁 **GitHub Repository:** https://github.com/yourusername/crisis-connect
 
 ---
 
@@ -81,7 +79,7 @@
 | 📁 Original Raw Dataset | 4,386 |
 | 🧹 Cleaned Dataset | 2,537 |
 | ✂️ Split Dataset (train/val/test) | 2,537 |
-| 🤖 ResNet-50 Model Weights (.pth)  | [Download](https://drive.google.com/file/d/1QY40L6gDE6kYVv09ylAwh6b1JY0T5AaM/view?usp=sharing) |
+| 🤖 ResNet-50 Model Weights (.pth) | (resnet-50 file)[Download](https://drive.google.com/file/d/1QY40L6gDE6kYVv09ylAwh6b1JY0T5AaM/view?usp=sharing) |
 
 ### Dataset Split
 
@@ -229,4 +227,5 @@ streamlit run app.py
 
 **CSC-233 — Artificial Intelligence Lab**
 Beaconhouse National University | Spring 2026
+
 
