@@ -210,17 +210,8 @@ streamlit run app.py
 | TF-IDF + MLP — after audio (Phase 3b) | 89.47% |
 | **Fusion Layer — Final (Phase 4)** | **95.07%** |
 
----
 
-## 👥 Team
 
-| Name | Student ID | Role |
-|---|---|---|
-| Maleeha Fatima | F2024-0693 | CNN Model (Phase 2) + Streamlit App (Phase 5) |
-| Imman Aamir | F2024-0641 | Audio & Text Preprocessing (Phase 3a) |
-| Ezzah Ali | F2024-0705 | NLP Text Classifier (Phase 3b) |
-| Syed Hudair Shah Bukhari | F2024-0788 | Fusion Layer + Severity (Phase 4) |
-| Abdulraheem Kashif | F2024-0667 | Dataset Preparation (Phase 1) |
 
 ---
 
