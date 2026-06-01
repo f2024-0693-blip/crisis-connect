@@ -213,11 +213,5 @@ streamlit run app.py
 
 
 
----
-
-## 🏫 Course Info
-
-**CSC-233 — Artificial Intelligence Lab**
-Beaconhouse National University | Spring 2026
 
 
