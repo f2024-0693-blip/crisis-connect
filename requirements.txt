@@ -7,3 +7,4 @@ nltk
 numpy
 joblib
 gdown
+audio-recorder-streamlit
