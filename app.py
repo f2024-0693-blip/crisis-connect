@@ -10,10 +10,10 @@ import joblib
 from nltk.corpus import stopwords
 import nltk
 nltk.download('stopwords', quiet=True)
-
+ 
 # ── Download models from Google Drive if not present ────────
 import gdown
-
+ 
 DRIVE_FILES = {
     'resnet50_crisis_connect.pth': '1QY40L6gDE6kYVv09ylAwh6b1JY0T5AaM',
     'mlp_classifier.pkl':          '11Mh-kmGgQqqo3H-stb-CEHC47gvT-Ucn',
@@ -21,9 +21,9 @@ DRIVE_FILES = {
     'label_encoder.pkl':           '1CsUHzx51EBVuqUzIBkxUvilE3NOwqL_q',
     'fusion.py':                   '1dRXQjzi0wfONKObY8OT1aVO6bUEqTd5j',
 }
-
+ 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
+ 
 def download_models():
     for fname, file_id in DRIVE_FILES.items():
         dest = os.path.join(BASE_DIR, fname)
@@ -31,35 +31,35 @@ def download_models():
             url = f'https://drive.google.com/uc?id={file_id}'
             st.info(f'Downloading {fname}...')
             gdown.download(url, dest, quiet=False)
-
+ 
 download_models()
-
+ 
 # ── Constants ────────────────────────────────────────────────
 CLASSES    = ['earthquake', 'flood', 'fire', 'traffic_incident']
 CNN_WEIGHT = 0.70
 MLP_WEIGHT = 0.30
 device     = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+ 
 CLASS_EMOJI = {
     'earthquake':       '🏚️',
     'flood':            '🌊',
     'fire':             '🔥',
     'traffic_incident': '🚗'
 }
-
+ 
 SEVERITY_COLOR = {
     'High':   '#FF4444',
     'Medium': '#FFA500',
     'Low':    '#44BB44'
 }
-
+ 
 # ── Page config ──────────────────────────────────────────────
 st.set_page_config(
     page_title='Crisis Connect',
     page_icon='🚨',
     layout='centered'
 )
-
+ 
 # ── Load models ──────────────────────────────────────────────
 @st.cache_resource
 def load_all_models():
@@ -77,14 +77,19 @@ def load_all_models():
     cnn = cnn.to(device)
     cnn.eval()
     cnn_idx_to_class = {v: k for k, v in ckpt['class_to_idx'].items()}
-
+ 
     # MLP + tools
     mlp = joblib.load(os.path.join(BASE_DIR, 'mlp_classifier.pkl'))
     vec = joblib.load(os.path.join(BASE_DIR, 'tfidf_vectorizer.pkl'))
     le  = joblib.load(os.path.join(BASE_DIR, 'label_encoder.pkl'))
-
+ 
     return cnn, cnn_idx_to_class, mlp, vec, le
-
+ 
+@st.cache_resource
+def load_whisper():
+    import whisper
+    return whisper.load_model('small')
+ 
 # ── Preprocessing ────────────────────────────────────────────
 img_transform = transforms.Compose([
     transforms.Resize(256),
@@ -93,14 +98,14 @@ img_transform = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406],
                          [0.229, 0.224, 0.225])
 ])
-
+ 
 def clean_text(text):
     sw = set(stopwords.words('english')) - {
         'no','not','very','too','above','below','near','under','over'
     }
     text = re.sub(r'[^a-z\s]', ' ', str(text).lower())
     return ' '.join([t for t in text.split() if t not in sw and len(t) > 2])
-
+ 
 def get_severity(confidence, predicted_class):
     HIGH_RISK = ['earthquake', 'flood']
     if confidence >= 0.75:
@@ -108,7 +113,7 @@ def get_severity(confidence, predicted_class):
     elif confidence >= 0.50:
         return 'Medium'
     return 'Low'
-
+ 
 def predict(image, text, cnn, cnn_idx_to_class, mlp, vec, le):
     # CNN
     tensor = img_transform(image).unsqueeze(0).to(device)
@@ -118,22 +123,22 @@ def predict(image, text, cnn, cnn_idx_to_class, mlp, vec, le):
     for idx, cls in cnn_idx_to_class.items():
         if cls in CLASSES:
             cnn_probs[CLASSES.index(cls)] = cnn_raw[idx]
-
+ 
     # MLP
     mlp_raw = mlp.predict_proba(vec.transform([clean_text(text)]))[0]
     mlp_probs = np.zeros(len(CLASSES))
     for i, cls in enumerate(le.classes_):
         if cls in CLASSES:
             mlp_probs[CLASSES.index(cls)] = mlp_raw[i]
-
+ 
     # Fuse
     fused      = CNN_WEIGHT * cnn_probs + MLP_WEIGHT * mlp_probs
     pred_idx   = int(np.argmax(fused))
     pred_class = CLASSES[pred_idx]
     confidence = float(fused[pred_idx])
-
+ 
     return pred_class, confidence, get_severity(confidence, pred_class), cnn_probs, mlp_probs, fused
-
+ 
 # ── UI ───────────────────────────────────────────────────────
 st.markdown("""
     <h1 style='text-align:center; color:#CC0000;'>🚨 Crisis Connect</h1>
@@ -144,15 +149,15 @@ st.markdown("""
     </p>
     <hr/>
 """, unsafe_allow_html=True)
-
+ 
 # Load models
 with st.spinner('Loading AI models... please wait'):
     cnn, cnn_idx_to_class, mlp, vec, le = load_all_models()
 st.success('Models loaded. Ready to classify.')
-
+ 
 # Input section
 col1, col2 = st.columns(2)
-
+ 
 with col1:
     st.subheader('📷 Upload Disaster Image')
     uploaded = st.file_uploader(
@@ -162,19 +167,72 @@ with col1:
     if uploaded:
         image = Image.open(uploaded).convert('RGB')
         st.image(image, caption='Uploaded image', use_column_width=True)
-
+ 
 with col2:
     st.subheader('📝 Describe the Incident')
+ 
+    # ── VOICE INPUT ─────────────────────────────────────────
+    st.caption('🎙️ Record your description or type below')
+ 
+    try:
+        from audio_recorder_streamlit import audio_recorder
+        audio_bytes = audio_recorder(
+            text='Click to record',
+            recording_color='#CC0000',
+            neutral_color='#666666',
+            icon_size='2x',
+        )
+ 
+        if audio_bytes:
+            # Save audio to temp file
+            audio_path = os.path.join(BASE_DIR, 'temp_audio.wav')
+            with open(audio_path, 'wb') as f:
+                f.write(audio_bytes)
+ 
+            with st.spinner('Transcribing audio...'):
+                whisper_model = load_whisper()
+                result = whisper_model.transcribe(audio_path)
+                transcribed = result['text'].strip()
+ 
+                # Translate if not English
+                detected_lang = result.get('language', 'en')
+                if detected_lang != 'en':
+                    try:
+                        from deep_translator import GoogleTranslator
+                        transcribed = GoogleTranslator(
+                            source='auto', target='en'
+                        ).translate(transcribed)
+                        st.caption(f'🌐 Translated from {detected_lang} to English')
+                    except Exception:
+                        pass
+ 
+            st.success(f'Transcribed: {transcribed}')
+            st.session_state['voice_text'] = transcribed
+            os.remove(audio_path)
+ 
+    except ImportError:
+        st.caption('Voice input unavailable — type your description below')
+ 
+    # Use voice text if available, otherwise empty
+    default_text = st.session_state.get('voice_text', '')
+ 
     text_input = st.text_area(
         'Describe what you see (max 200 characters)',
+        value=default_text,
         placeholder='e.g. Water rising fast on main road, cars stranded near bridge',
         max_chars=200,
         height=120
     )
     st.caption(f'{len(text_input)}/200 characters')
-
+ 
+    # Clear voice text button
+    if st.session_state.get('voice_text'):
+        if st.button('🗑️ Clear voice text'):
+            st.session_state['voice_text'] = ''
+            st.rerun()
+ 
 st.markdown('<br/>', unsafe_allow_html=True)
-
+ 
 # Classify button
 if st.button('🔍 Classify Incident', use_container_width=True, type='primary'):
     if uploaded is None:
@@ -186,13 +244,13 @@ if st.button('🔍 Classify Incident', use_container_width=True, type='primary')
             pred_class, confidence, severity, cnn_probs, mlp_probs, fused = predict(
                 image, text_input, cnn, cnn_idx_to_class, mlp, vec, le
             )
-
+ 
         st.markdown('<hr/>', unsafe_allow_html=True)
         st.subheader('🎯 Classification Result')
-
+ 
         sev_color = SEVERITY_COLOR[severity]
         emoji     = CLASS_EMOJI.get(pred_class, '⚠️')
-
+ 
         st.markdown(f"""
             <div style='background:#f8f8f8; border-radius:12px; padding:20px;
                         text-align:center; border: 2px solid {sev_color};'>
@@ -203,12 +261,12 @@ if st.button('🔍 Classify Incident', use_container_width=True, type='primary')
                 </p>
             </div>
         """, unsafe_allow_html=True)
-
+ 
         st.markdown('<br/>', unsafe_allow_html=True)
-
+ 
         st.subheader('📊 Class Probabilities')
         tabs = st.tabs(['Fused (Final)', 'CNN Only', 'Text Only'])
-
+ 
         for tab, probs, label in zip(
             tabs,
             [fused, cnn_probs, mlp_probs],
@@ -222,10 +280,10 @@ if st.button('🔍 Classify Incident', use_container_width=True, type='primary')
                         float(probs[i]),
                         text=f"{e} {cls.replace('_', ' ').title()}: {probs[i]*100:.1f}%"
                     )
-
+ 
         st.markdown('<br/>', unsafe_allow_html=True)
-        st.info('Powered by ResNet-50 (CNN) + TF-IDF MLP (Text) — Crisis Connect AI Lab Spring 2026')
-
+        st.info('Powered by ResNet-50 (CNN) + TF-IDF MLP (Text) + Whisper (Voice) — Crisis Connect AI Lab Spring 2026')
+ 
 # Footer
 st.markdown('<hr/>', unsafe_allow_html=True)
 st.markdown("""
