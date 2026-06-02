@@ -8,3 +8,5 @@ numpy
 joblib
 gdown
 audio-recorder-streamlit
+openai-whisper
+deep-translator
